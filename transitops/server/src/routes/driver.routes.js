@@ -30,6 +30,12 @@ import {
 const router = Router();
 
 router.use(authenticate);
+router.use(
+    authorize(
+        "FLEET_MANAGER",
+        "SAFETY_OFFICER"
+    )
+);
 
 /*
  * Static endpoints must appear before "/:id".
@@ -46,7 +52,7 @@ router.get(
 );
 
 /*
- * All authenticated roles can view drivers.
+ * Driver records are limited to Fleet Managers and Safety Officers.
  */
 router.get(
     "/",

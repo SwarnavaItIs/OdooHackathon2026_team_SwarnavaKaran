@@ -25,9 +25,10 @@ import {
 const router = Router();
 
 router.use(authenticate);
+router.use(authorize("FLEET_MANAGER"));
 
 /*
- * All authenticated users may view maintenance history.
+ * Fleet Managers may view and manage maintenance history.
  */
 router.get(
     "/",

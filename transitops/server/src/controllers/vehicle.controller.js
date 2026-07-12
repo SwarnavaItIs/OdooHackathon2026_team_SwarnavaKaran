@@ -192,12 +192,44 @@ export async function updateVehicle(req, res, next) {
             );
         }
 
-        const vehicle = await prisma.vehicle.update({
+        if (
+            req.body.odometerKm !== undefined &&
+            Number(req.body.odometerKm) <
+                Number(existingVehicle.odometerKm)
+        ) {
+            throw httpError(
+                400,
+                `Odometer cannot be below the current value of ${existingVehicle.odometerKm} km`
+            );
+        }
+
+        const updated = await prisma.vehicle.updateMany({
             where: {
                 id,
+                status: existingVehicle.status,
             },
             data: req.body,
         });
+
+        if (updated.count !== 1) {
+            throw httpError(
+                409,
+                "Vehicle status changed before the update could be applied"
+            );
+        }
+
+        const vehicle = await prisma.vehicle.findUnique({
+            where: {
+                id,
+            },
+        });
+
+        if (!vehicle) {
+            throw httpError(
+                409,
+                "Vehicle was removed before the update completed"
+            );
+        }
 
         res.status(200).json({
             success: true,
@@ -241,14 +273,35 @@ export async function retireVehicle(req, res, next) {
             );
         }
 
-        const retiredVehicle = await prisma.vehicle.update({
+        const retired = await prisma.vehicle.updateMany({
             where: {
                 id,
+                status: "AVAILABLE",
             },
             data: {
                 status: "RETIRED",
             },
         });
+
+        if (retired.count !== 1) {
+            throw httpError(
+                409,
+                "Vehicle status changed before it could be retired"
+            );
+        }
+
+        const retiredVehicle = await prisma.vehicle.findUnique({
+            where: {
+                id,
+            },
+        });
+
+        if (!retiredVehicle) {
+            throw httpError(
+                409,
+                "Vehicle was removed before retirement completed"
+            );
+        }
 
         res.status(200).json({
             success: true,

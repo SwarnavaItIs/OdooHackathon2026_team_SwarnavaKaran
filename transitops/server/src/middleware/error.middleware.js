@@ -6,16 +6,31 @@ export function notFoundHandler(req, res) {
 }
 
 export function errorHandler(error, req, res, next) {
-    console.error(error);
-
     if (res.headersSent) {
         return next(error);
     }
 
+    if (error?.type === "entity.parse.failed") {
+        return res.status(400).json({
+            success: false,
+            message: "Request body contains invalid JSON",
+        });
+    }
+
+    if (error?.type === "entity.too.large") {
+        return res.status(413).json({
+            success: false,
+            message: "Request body is too large",
+        });
+    }
+
+    const prismaErrorCode =
+        error?.code ?? error?.errorCode;
+
     /*
      * Prisma unique constraint violation.
      */
-    if (error.code === "P2002") {
+    if (prismaErrorCode === "P2002") {
         const target = error.meta?.target;
 
         const fieldText = Array.isArray(target)
@@ -87,7 +102,7 @@ export function errorHandler(error, req, res, next) {
     /*
      * Foreign key violation.
      */
-    if (error.code === "P2003") {
+    if (prismaErrorCode === "P2003") {
         return res.status(409).json({
             success: false,
             message:
@@ -96,35 +111,67 @@ export function errorHandler(error, req, res, next) {
     }
 
     /*
- * Serializable transaction conflict or database deadlock.
- */
-    if (error.code === "P2034") {
+     * Serializable transaction conflict or database deadlock.
+     */
+    if (prismaErrorCode === "P2034") {
         return res.status(409).json({
             success: false,
             message:
                 "The operation conflicted with another request. Please try again",
         });
     }
+
     /*
      * Prisma record not found.
      */
-    if (error.code === "P2025") {
+    if (prismaErrorCode === "P2025") {
         return res.status(404).json({
             success: false,
             message: "Requested record was not found",
         });
     }
 
+    if (
+        [
+            "P1000",
+            "P1001",
+            "P1002",
+            "P1008",
+            "P1017",
+            "P2024",
+        ].includes(prismaErrorCode)
+    ) {
+        console.error(
+            "Database request failed:",
+            prismaErrorCode
+        );
+
+        return res.status(503).json({
+            success: false,
+            message: "Database service is unavailable",
+        });
+    }
+
+    const requestedStatus = Number(
+        error?.statusCode ?? error?.status
+    );
+
     const statusCode =
-        error.statusCode ||
-        error.status ||
-        500;
+        Number.isInteger(requestedStatus) &&
+        requestedStatus >= 400 &&
+        requestedStatus <= 599
+            ? requestedStatus
+            : 500;
+
+    if (statusCode >= 500) {
+        console.error(error);
+    }
 
     res.status(statusCode).json({
         success: false,
         message:
             statusCode === 500
                 ? "Internal server error"
-                : error.message,
+                : error?.message || "Request failed",
     });
 }

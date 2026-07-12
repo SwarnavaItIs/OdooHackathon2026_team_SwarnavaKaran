@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -116,7 +117,10 @@ function SidebarContent({
         </div>
       </div>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
+      <nav
+        aria-label="Primary navigation"
+        className="flex-1 space-y-1 overflow-y-auto px-3 py-5"
+      >
         {visibleItems.map((item) => (
           <NavLink
             key={item.path}
@@ -164,6 +168,29 @@ export default function AppLayout() {
 
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (!sidebarOpen) {
+      return undefined;
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === "Escape") {
+        setSidebarOpen(false);
+      }
+    }
+
+    window.addEventListener(
+      "keydown",
+      handleKeyDown
+    );
+
+    return () =>
+      window.removeEventListener(
+        "keydown",
+        handleKeyDown
+      );
+  }, [sidebarOpen]);
+
   function handleLogout() {
     logout();
     navigate("/login", {
@@ -195,6 +222,8 @@ export default function AppLayout() {
 
       {/* Mobile sidebar */}
       <aside
+        aria-hidden={!sidebarOpen}
+        inert={!sidebarOpen}
         className={[
           "fixed inset-y-0 left-0 z-50 w-72 bg-slate-950 transition-transform duration-200 lg:hidden",
           sidebarOpen

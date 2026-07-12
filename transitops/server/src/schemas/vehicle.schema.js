@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+import {
+    decimalLimits,
+    numberInput,
+} from "./common.schema.js";
+
 const vehicleIdSchema = z.object({
     id: z.string().uuid("Invalid vehicle ID"),
 });
@@ -48,19 +53,35 @@ export const createVehicleSchema = z.object({
             .min(2, "Region is required")
             .max(100),
 
-        maxLoadKg: z.coerce
-            .number()
-            .positive("Maximum load capacity must be greater than zero"),
+        maxLoadKg: numberInput(
+            z
+                .number()
+                .positive("Maximum load capacity must be greater than zero")
+                .max(
+                    decimalLimits.decimal10Scale2,
+                    "Maximum load capacity is too large"
+                )
+        ),
 
-        odometerKm: z.coerce
-            .number()
-            .min(0, "Odometer cannot be negative")
-            .default(0),
+        odometerKm: numberInput(
+            z
+                .number()
+                .min(0, "Odometer cannot be negative")
+                .max(
+                    decimalLimits.decimal12Scale2,
+                    "Odometer value is too large"
+                )
+        ).default(0),
 
-        acquisitionCost: z.coerce
-            .number()
-            .min(0, "Acquisition cost cannot be negative")
-            .default(0),
+        acquisitionCost: numberInput(
+            z
+                .number()
+                .min(0, "Acquisition cost cannot be negative")
+                .max(
+                    decimalLimits.decimal14Scale2,
+                    "Acquisition cost is too large"
+                )
+        ).default(0),
     }),
 });
 
@@ -94,20 +115,35 @@ export const updateVehicleSchema = z.object({
                 .max(100)
                 .optional(),
 
-            maxLoadKg: z.coerce
-                .number()
-                .positive("Maximum load capacity must be greater than zero")
-                .optional(),
+            maxLoadKg: numberInput(
+                z
+                    .number()
+                    .positive("Maximum load capacity must be greater than zero")
+                    .max(
+                        decimalLimits.decimal10Scale2,
+                        "Maximum load capacity is too large"
+                    )
+            ).optional(),
 
-            odometerKm: z.coerce
-                .number()
-                .min(0, "Odometer cannot be negative")
-                .optional(),
+            odometerKm: numberInput(
+                z
+                    .number()
+                    .min(0, "Odometer cannot be negative")
+                    .max(
+                        decimalLimits.decimal12Scale2,
+                        "Odometer value is too large"
+                    )
+            ).optional(),
 
-            acquisitionCost: z.coerce
-                .number()
-                .min(0, "Acquisition cost cannot be negative")
-                .optional(),
+            acquisitionCost: numberInput(
+                z
+                    .number()
+                    .min(0, "Acquisition cost cannot be negative")
+                    .max(
+                        decimalLimits.decimal14Scale2,
+                        "Acquisition cost is too large"
+                    )
+            ).optional(),
         })
         .refine(
             (body) => Object.keys(body).length > 0,

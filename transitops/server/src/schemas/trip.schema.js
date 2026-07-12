@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+import {
+    decimalLimits,
+    numberInput,
+} from "./common.schema.js";
+
 const tripIdParams = z.object({
     id: z.string().uuid("Invalid trip ID"),
 });
@@ -26,18 +31,35 @@ export const createTripSchema = z.object({
             .string()
             .uuid("Invalid driver ID"),
 
-        cargoWeightKg: z.coerce
-            .number()
-            .positive("Cargo weight must be greater than zero"),
+        cargoWeightKg: numberInput(
+            z
+                .number()
+                .positive("Cargo weight must be greater than zero")
+                .max(
+                    decimalLimits.decimal10Scale2,
+                    "Cargo weight is too large"
+                )
+        ),
 
-        plannedDistanceKm: z.coerce
-            .number()
-            .positive("Planned distance must be greater than zero"),
+        plannedDistanceKm: numberInput(
+            z
+                .number()
+                .positive("Planned distance must be greater than zero")
+                .max(
+                    decimalLimits.decimal12Scale2,
+                    "Planned distance is too large"
+                )
+        ),
 
-        revenue: z.coerce
-            .number()
-            .min(0, "Revenue cannot be negative")
-            .default(0),
+        revenue: numberInput(
+            z
+                .number()
+                .min(0, "Revenue cannot be negative")
+                .max(
+                    decimalLimits.decimal14Scale2,
+                    "Revenue is too large"
+                )
+        ).default(0),
     }),
 });
 
@@ -45,25 +67,54 @@ export const completeTripSchema = z.object({
     params: tripIdParams,
 
     body: z.object({
-        finalOdometerKm: z.coerce
-            .number()
-            .min(0, "Final odometer cannot be negative"),
+        finalOdometerKm: numberInput(
+            z
+                .number()
+                .min(0, "Final odometer cannot be negative")
+                .max(
+                    decimalLimits.decimal12Scale2,
+                    "Final odometer value is too large"
+                )
+        ),
 
-        fuelLiters: z.coerce
-            .number()
-            .min(0, "Fuel consumed cannot be negative")
-            .default(0),
+        fuelLiters: numberInput(
+            z
+                .number()
+                .min(0, "Fuel consumed cannot be negative")
+                .max(
+                    decimalLimits.decimal10Scale2,
+                    "Fuel quantity is too large"
+                )
+        ).default(0),
 
-        fuelCost: z.coerce
-            .number()
-            .min(0, "Fuel cost cannot be negative")
-            .default(0),
+        fuelCost: numberInput(
+            z
+                .number()
+                .min(0, "Fuel cost cannot be negative")
+                .max(
+                    decimalLimits.decimal14Scale2,
+                    "Fuel cost is too large"
+                )
+        ).default(0),
 
-        revenue: z.coerce
-            .number()
-            .min(0, "Revenue cannot be negative")
-            .optional(),
-    }),
+        revenue: numberInput(
+            z
+                .number()
+                .min(0, "Revenue cannot be negative")
+                .max(
+                    decimalLimits.decimal14Scale2,
+                    "Revenue is too large"
+                )
+        ).optional(),
+    }).refine(
+        (body) =>
+            body.fuelLiters > 0 || body.fuelCost === 0,
+        {
+            path: ["fuelCost"],
+            message:
+                "Fuel cost must be zero when no fuel was consumed",
+        }
+    ),
 });
 
 export const tripIdParamSchema = z.object({

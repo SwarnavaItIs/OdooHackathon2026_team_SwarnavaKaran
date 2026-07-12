@@ -325,13 +325,28 @@ export async function updateMaintenance(
             );
         }
 
-        const maintenance =
-            await prisma.maintenanceLog.update({
+        const updated =
+            await prisma.maintenanceLog.updateMany({
                 where: {
                     id,
+                    status: "ACTIVE",
                 },
 
                 data: req.body,
+            });
+
+        if (updated.count !== 1) {
+            throw httpError(
+                409,
+                "Maintenance status changed before the update could be applied"
+            );
+        }
+
+        const maintenance =
+            await prisma.maintenanceLog.findUnique({
+                where: {
+                    id,
+                },
 
                 include: {
                     vehicle: true,
@@ -345,6 +360,13 @@ export async function updateMaintenance(
                     },
                 },
             });
+
+        if (!maintenance) {
+            throw httpError(
+                409,
+                "Maintenance record was removed before the update completed"
+            );
+        }
 
         res.status(200).json({
             success: true,

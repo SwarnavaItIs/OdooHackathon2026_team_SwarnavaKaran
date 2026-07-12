@@ -135,6 +135,7 @@ export async function buildVehicleReport(filters = {}) {
         operationalCost: 0,
         totalTrackedCost: 0,
         revenue: 0,
+        overallFuelEfficiencyKmPerLiter: 0,
       },
     };
   }

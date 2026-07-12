@@ -1,0 +1,22 @@
+{
+  "name": "transitops",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "setup:env": "node scripts/ensure-env.js",
+    "install:all": "npm ci && npm ci --prefix server && npm ci --prefix client",
+    "db:up": "docker compose -f server/docker-compose.yml up -d --wait",
+    "db:down": "docker compose -f server/docker-compose.yml down",
+    "db:deploy": "npm --prefix server run db:deploy",
+    "db:seed": "npm --prefix server run db:seed",
+    "setup": "npm run setup:env && npm run install:all && npm run db:up && npm run db:deploy && npm run db:seed",
+    "dev": "node scripts/dev.js",
+    "check": "node --check scripts/dev.js && node --check scripts/ensure-env.js && npm --prefix server run check && npm --prefix client run lint && npm --prefix client run build",
+    "smoke:test": "npm --prefix server run smoke:test"
+  },
+  "engines": {
+    "node": ">=20.19.0",
+    "npm": ">=10"
+  }
+}

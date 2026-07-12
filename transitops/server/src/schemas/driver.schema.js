@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+import {
+    dateInput,
+    numberInput,
+} from "./common.schema.js";
+
 const driverIdSchema = z.object({
     id: z.string().uuid("Invalid driver ID"),
 });
@@ -17,9 +22,9 @@ const phoneSchema = z
     .min(7, "Contact number is too short")
     .max(20, "Contact number cannot exceed 20 characters");
 
-const dateSchema = z.coerce.date({
-    message: "Enter a valid licence expiry date",
-});
+const dateSchema = dateInput(
+    "Enter a valid licence expiry date"
+);
 
 const editableDriverStatus = z.enum([
     "AVAILABLE",
@@ -47,11 +52,12 @@ export const createDriverSchema = z.object({
 
         contactNumber: phoneSchema,
 
-        safetyScore: z.coerce
-            .number()
-            .min(0, "Safety score cannot be below 0")
-            .max(100, "Safety score cannot exceed 100")
-            .default(100),
+        safetyScore: numberInput(
+            z
+                .number()
+                .min(0, "Safety score cannot be below 0")
+                .max(100, "Safety score cannot exceed 100")
+        ).default(100),
 
         region: z
             .string()
@@ -88,11 +94,12 @@ export const updateDriverSchema = z.object({
 
             contactNumber: phoneSchema.optional(),
 
-            safetyScore: z.coerce
-                .number()
-                .min(0)
-                .max(100)
-                .optional(),
+            safetyScore: numberInput(
+                z
+                    .number()
+                    .min(0)
+                    .max(100)
+            ).optional(),
 
             region: z
                 .string()

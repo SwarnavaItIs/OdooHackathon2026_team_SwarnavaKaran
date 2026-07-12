@@ -57,6 +57,15 @@ function serializeFuelLog(fuelLog) {
     };
 }
 
+function serializeExpense(expense) {
+    if (!expense) return expense;
+
+    return {
+        ...expense,
+        amount: toNumber(expense.amount),
+    };
+}
+
 function serializeTrip(trip) {
     if (!trip) return trip;
 
@@ -75,6 +84,10 @@ function serializeTrip(trip) {
 
         fuelLogs: trip.fuelLogs
             ? trip.fuelLogs.map(serializeFuelLog)
+            : undefined,
+
+        expenses: trip.expenses
+            ? trip.expenses.map(serializeExpense)
             : undefined,
     };
 }
@@ -744,8 +757,15 @@ export async function completeTrip(req, res, next) {
 
                 /*
                  * Rule 7:
-                 * Driver returns to Available.
+                 * The driver returns to Available unless the licence
+                 * expired while the trip was active.
                  */
+                const returnDriverStatus = isLicenseExpired(
+                    existingTrip.driver.licenseExpiry
+                )
+                    ? "OFF_DUTY"
+                    : "AVAILABLE";
+
                 const driverRelease =
                     await tx.driver.updateMany({
                         where: {
@@ -754,7 +774,7 @@ export async function completeTrip(req, res, next) {
                         },
 
                         data: {
-                            status: "AVAILABLE",
+                            status: returnDriverStatus,
                         },
                     });
 
@@ -804,7 +824,9 @@ export async function completeTrip(req, res, next) {
         res.status(200).json({
             success: true,
             message:
-                "Trip completed; vehicle and driver are now Available",
+                trip.driver.status === "OFF_DUTY"
+                    ? "Trip completed; vehicle is Available and the driver moved Off Duty because the licence expired"
+                    : "Trip completed; vehicle and driver are now Available",
             trip: serializeTrip(trip),
         });
     } catch (error) {
@@ -871,6 +893,12 @@ export async function cancelTrip(req, res, next) {
                         );
                     }
 
+                    const returnDriverStatus = isLicenseExpired(
+                        existingTrip.driver.licenseExpiry
+                    )
+                        ? "OFF_DUTY"
+                        : "AVAILABLE";
+
                     const driverRelease =
                         await tx.driver.updateMany({
                             where: {
@@ -879,7 +907,7 @@ export async function cancelTrip(req, res, next) {
                             },
 
                             data: {
-                                status: "AVAILABLE",
+                                status: returnDriverStatus,
                             },
                         });
 
@@ -932,7 +960,11 @@ export async function cancelTrip(req, res, next) {
         res.status(200).json({
             success: true,
             message:
-                "Trip cancelled and assigned resources restored",
+                !trip.dispatchedAt
+                    ? "Draft trip cancelled"
+                    : trip.driver.status === "OFF_DUTY"
+                      ? "Trip cancelled; vehicle is Available and the driver moved Off Duty because the licence expired"
+                      : "Trip cancelled and assigned resources restored",
             trip: serializeTrip(trip),
         });
     } catch (error) {

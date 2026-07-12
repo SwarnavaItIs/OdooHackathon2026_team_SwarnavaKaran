@@ -10,12 +10,25 @@ function escapeCsvValue(value) {
     return "";
   }
 
-  const text = String(value);
+  let text = String(value);
+
+  /*
+   * Prevent user-controlled text fields from being interpreted as
+   * spreadsheet formulas when the CSV is opened. Numeric values remain
+   * numeric because this only applies to original string values.
+   */
+  if (
+    typeof value === "string" &&
+    /^[=+\-@\t\r]/.test(text)
+  ) {
+    text = `'${text}`;
+  }
 
   if (
     text.includes(",") ||
     text.includes('"') ||
-    text.includes("\n")
+    text.includes("\n") ||
+    text.includes("\r")
   ) {
     return `"${text.replaceAll('"', '""')}"`;
   }

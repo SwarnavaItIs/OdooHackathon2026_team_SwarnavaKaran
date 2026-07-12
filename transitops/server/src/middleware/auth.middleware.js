@@ -6,32 +6,42 @@ export async function authenticate(req, res, next) {
   try {
     const authorizationHeader = req.headers.authorization;
 
-    if (
-      !authorizationHeader ||
-      !authorizationHeader.startsWith("Bearer ")
-    ) {
+    if (!authorizationHeader) {
       return res.status(401).json({
         success: false,
         message: "Authentication required",
       });
     }
 
-    const token = authorizationHeader.split(" ")[1];
+    const bearerMatch = authorizationHeader.match(
+      /^Bearer\s+(\S+)$/i
+    );
 
-    if (!token) {
+    if (!bearerMatch) {
       return res.status(401).json({
         success: false,
-        message: "Authentication token is missing",
+        message: "Invalid authorization header",
       });
     }
+
+    const token = bearerMatch[1];
 
     if (!process.env.JWT_SECRET) {
       throw new Error("JWT_SECRET is not configured");
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET,
+      {
+        algorithms: ["HS256"],
+      }
+    );
 
-    const userId = decoded.sub;
+    const userId =
+      typeof decoded === "object" && decoded !== null
+        ? decoded.sub
+        : undefined;
 
     if (!userId || typeof userId !== "string") {
       return res.status(401).json({
@@ -80,6 +90,13 @@ export async function authenticate(req, res, next) {
       return res.status(401).json({
         success: false,
         message: "Authentication token has expired",
+      });
+    }
+
+    if (error.name === "NotBeforeError") {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication token is not active",
       });
     }
 

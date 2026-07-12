@@ -28,10 +28,17 @@ import {
 const router = Router();
 
 router.use(authenticate);
+router.use(
+  authorize(
+    "FLEET_MANAGER",
+    "DRIVER",
+    "FINANCIAL_ANALYST"
+  )
+);
 
 /*
- * Reading fuel, expense and cost data is available
- * to every authenticated role.
+ * Reading fuel, expense and cost data is available to the
+ * operational and finance roles exposed by the client.
  */
 router.get(
   "/fuel",

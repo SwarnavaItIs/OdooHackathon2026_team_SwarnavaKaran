@@ -9,6 +9,10 @@ function toNumber(value) {
   return Number(value);
 }
 
+function roundTwo(value) {
+  return Number(value.toFixed(2));
+}
+
 function serializeFuelLog(log) {
   return {
     ...log,
@@ -177,7 +181,7 @@ export async function getFuelLogs(
 
       if (dateTo) {
         const endOfDay = new Date(dateTo);
-        endOfDay.setHours(23, 59, 59, 999);
+        endOfDay.setUTCHours(23, 59, 59, 999);
 
         where.loggedAt.lte = endOfDay;
       }
@@ -771,18 +775,28 @@ export async function getSingleVehicleCostSummary(
         },
 
         completedTrips: vehicle.trips.length,
-        completedDistanceKm,
-        fuelLiters,
+        completedDistanceKm: roundTwo(
+          completedDistanceKm
+        ),
+        fuelLiters: roundTwo(fuelLiters),
         fuelEfficiencyKmPerLiter: Number(
           fuelEfficiency.toFixed(2)
         ),
 
-        revenue,
-        fuelCost,
-        maintenanceCost,
-        otherExpenseCost,
-        operationalCost,
-        totalTrackedCost,
+        revenue: roundTwo(revenue),
+        fuelCost: roundTwo(fuelCost),
+        maintenanceCost: roundTwo(
+          maintenanceCost
+        ),
+        otherExpenseCost: roundTwo(
+          otherExpenseCost
+        ),
+        operationalCost: roundTwo(
+          operationalCost
+        ),
+        totalTrackedCost: roundTwo(
+          totalTrackedCost
+        ),
 
         roi: Number(roi.toFixed(4)),
         roiPercentage: Number(

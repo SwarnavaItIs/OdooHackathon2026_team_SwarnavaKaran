@@ -4,6 +4,13 @@ import jwt from "jsonwebtoken";
 import prisma from "../config/prisma.js";
 import { httpError } from "../utils/httpError.js";
 
+/*
+ * Comparing against a real hash for unknown accounts keeps the login
+ * path from exposing account existence through a large timing gap.
+ */
+const DUMMY_PASSWORD_HASH =
+  "$2b$12$w7eLbAVCp82niEX3qFJJjO/z6WKPMaMYiCWhoMZdO9X8hqHx21Aa6";
+
 function generateToken(userId) {
   if (!process.env.JWT_SECRET) {
     throw new Error("JWT_SECRET is not configured");
@@ -46,25 +53,17 @@ export async function login(req, res, next) {
       },
     });
 
-    /*
-     * Use the same error for unknown email and incorrect password.
-     * This avoids revealing whether an account exists.
-     */
-    if (!user) {
+    const passwordMatches = await bcrypt.compare(
+      password,
+      user?.passwordHash || DUMMY_PASSWORD_HASH
+    );
+
+    if (!user || !passwordMatches) {
       throw httpError(401, "Invalid email or password");
     }
 
     if (!user.isActive) {
       throw httpError(403, "This account has been disabled");
-    }
-
-    const passwordMatches = await bcrypt.compare(
-      password,
-      user.passwordHash
-    );
-
-    if (!passwordMatches) {
-      throw httpError(401, "Invalid email or password");
     }
 
     const token = generateToken(user.id);

@@ -1,14 +1,20 @@
 import prisma from "../config/prisma.js";
 import { httpError } from "../utils/httpError.js";
 
-function startOfToday() {
-    const date = new Date();
-    date.setHours(0, 0, 0, 0);
-    return date;
+function startOfTodayUtc() {
+    const now = new Date();
+
+    return new Date(
+        Date.UTC(
+            now.getUTCFullYear(),
+            now.getUTCMonth(),
+            now.getUTCDate()
+        )
+    );
 }
 
 function isLicenseExpired(expiryDate) {
-    return new Date(expiryDate) < startOfToday();
+    return new Date(expiryDate) < startOfTodayUtc();
 }
 
 function serializeDriver(driver) {
@@ -110,13 +116,13 @@ export async function getDrivers(req, res, next) {
 
         if (licenseState === "VALID") {
             where.licenseExpiry = {
-                gte: startOfToday(),
+                gte: startOfTodayUtc(),
             };
         }
 
         if (licenseState === "EXPIRED") {
             where.licenseExpiry = {
-                lt: startOfToday(),
+                lt: startOfTodayUtc(),
             };
         }
 
@@ -243,12 +249,33 @@ export async function updateDriver(req, res, next) {
             data.status = "OFF_DUTY";
         }
 
-        const driver = await prisma.driver.update({
+        const updated = await prisma.driver.updateMany({
             where: {
                 id,
+                status: existingDriver.status,
             },
             data,
         });
+
+        if (updated.count !== 1) {
+            throw httpError(
+                409,
+                "Driver status changed before the update could be applied"
+            );
+        }
+
+        const driver = await prisma.driver.findUnique({
+            where: {
+                id,
+            },
+        });
+
+        if (!driver) {
+            throw httpError(
+                409,
+                "Driver was removed before the update completed"
+            );
+        }
 
         res.status(200).json({
             success: true,
@@ -306,14 +333,35 @@ export async function updateDriverStatus(req, res, next) {
             );
         }
 
-        const driver = await prisma.driver.update({
+        const updated = await prisma.driver.updateMany({
             where: {
                 id,
+                status: existingDriver.status,
             },
             data: {
                 status,
             },
         });
+
+        if (updated.count !== 1) {
+            throw httpError(
+                409,
+                "Driver status changed before the update could be applied"
+            );
+        }
+
+        const driver = await prisma.driver.findUnique({
+            where: {
+                id,
+            },
+        });
+
+        if (!driver) {
+            throw httpError(
+                409,
+                "Driver was removed before the status update completed"
+            );
+        }
 
         res.status(200).json({
             success: true,
@@ -389,7 +437,7 @@ export async function getEligibleDrivers(req, res, next) {
              * Expired drivers are removed from dispatch selection.
              */
             licenseExpiry: {
-                gte: startOfToday(),
+                gte: startOfTodayUtc(),
             },
         };
 

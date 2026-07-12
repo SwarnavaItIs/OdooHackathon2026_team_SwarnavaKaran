@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+import {
+    decimalLimits,
+    numberInput,
+} from "./common.schema.js";
+
 const maintenanceIdParams = z.object({
     id: z.string().uuid("Invalid maintenance record ID"),
 });
@@ -28,10 +33,15 @@ export const createMaintenanceSchema = z.object({
                 return value;
             }),
 
-        cost: z.coerce
-            .number()
-            .min(0, "Maintenance cost cannot be negative")
-            .default(0),
+        cost: numberInput(
+            z
+                .number()
+                .min(0, "Maintenance cost cannot be negative")
+                .max(
+                    decimalLimits.decimal14Scale2,
+                    "Maintenance cost is too large"
+                )
+        ).default(0),
     }),
 });
 
@@ -59,10 +69,15 @@ export const updateMaintenanceSchema = z.object({
                     return value;
                 }),
 
-            cost: z.coerce
-                .number()
-                .min(0, "Maintenance cost cannot be negative")
-                .optional(),
+            cost: numberInput(
+                z
+                    .number()
+                    .min(0, "Maintenance cost cannot be negative")
+                    .max(
+                        decimalLimits.decimal14Scale2,
+                        "Maintenance cost is too large"
+                    )
+            ).optional(),
         })
         .refine(
             (body) => Object.keys(body).length > 0,

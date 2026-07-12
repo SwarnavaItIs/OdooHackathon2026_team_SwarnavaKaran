@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+import {
+  dateInput,
+  decimalLimits,
+  numberInput,
+} from "./common.schema.js";
+
 const vehicleIdParams = z.object({
   id: z.string().uuid("Invalid vehicle ID"),
 });
@@ -18,22 +24,39 @@ export const createFuelLogSchema = z.object({
 
     tripId: nullableTripId,
 
-    liters: z.coerce
-      .number()
-      .positive("Fuel quantity must be greater than zero"),
+    liters: numberInput(
+      z
+        .number()
+        .positive("Fuel quantity must be greater than zero")
+        .max(
+          decimalLimits.decimal10Scale2,
+          "Fuel quantity is too large"
+        )
+    ),
 
-    totalCost: z.coerce
-      .number()
-      .min(0, "Fuel cost cannot be negative"),
+    totalCost: numberInput(
+      z
+        .number()
+        .min(0, "Fuel cost cannot be negative")
+        .max(
+          decimalLimits.decimal14Scale2,
+          "Fuel cost is too large"
+        )
+    ),
 
-    odometerKm: z.coerce
-      .number()
-      .min(0, "Odometer cannot be negative")
+    odometerKm: numberInput(
+      z
+        .number()
+        .min(0, "Odometer cannot be negative")
+        .max(
+          decimalLimits.decimal12Scale2,
+          "Odometer value is too large"
+        )
+    )
       .optional()
       .nullable(),
 
-    loggedAt: z.coerce
-      .date()
+    loggedAt: dateInput("Enter a valid fuel log date")
       .optional(),
   }),
 });
@@ -50,18 +73,25 @@ export const fuelLogListSchema = z.object({
       .uuid("Invalid trip ID")
       .optional(),
 
-    dateFrom: z.coerce
-      .date()
+    dateFrom: dateInput("Enter a valid start date")
       .optional(),
 
-    dateTo: z.coerce
-      .date()
+    dateTo: dateInput("Enter a valid end date")
       .optional(),
 
     sortOrder: z
       .enum(["asc", "desc"])
       .default("desc"),
-  }),
+  }).refine(
+    (query) =>
+      !query.dateFrom ||
+      !query.dateTo ||
+      query.dateFrom <= query.dateTo,
+    {
+      path: ["dateTo"],
+      message: "End date cannot be before start date",
+    }
+  ),
 });
 
 export const createExpenseSchema = z.object({
@@ -93,12 +123,17 @@ export const createExpenseSchema = z.object({
         return value;
       }),
 
-    amount: z.coerce
-      .number()
-      .positive("Expense amount must be greater than zero"),
+    amount: numberInput(
+      z
+        .number()
+        .positive("Expense amount must be greater than zero")
+        .max(
+          decimalLimits.decimal14Scale2,
+          "Expense amount is too large"
+        )
+    ),
 
-    expenseDate: z.coerce
-      .date()
+    expenseDate: dateInput("Enter a valid expense date")
       .optional(),
   }),
 });
@@ -126,18 +161,25 @@ export const expenseListSchema = z.object({
       ])
       .optional(),
 
-    dateFrom: z.coerce
-      .date()
+    dateFrom: dateInput("Enter a valid start date")
       .optional(),
 
-    dateTo: z.coerce
-      .date()
+    dateTo: dateInput("Enter a valid end date")
       .optional(),
 
     sortOrder: z
       .enum(["asc", "desc"])
       .default("desc"),
-  }),
+  }).refine(
+    (query) =>
+      !query.dateFrom ||
+      !query.dateTo ||
+      query.dateFrom <= query.dateTo,
+    {
+      path: ["dateTo"],
+      message: "End date cannot be before start date",
+    }
+  ),
 });
 
 export const vehicleCostListSchema = z.object({

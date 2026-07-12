@@ -15,6 +15,44 @@ function createStatusBreakdown(values, statuses) {
   return result;
 }
 
+function startOfTodayUtc() {
+  const now = new Date();
+
+  return new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate()
+    )
+  );
+}
+
+function toNumber(value) {
+  return value === null || value === undefined
+    ? value
+    : Number(value);
+}
+
+function serializeRecentTrip(trip) {
+  return {
+    ...trip,
+    cargoWeightKg: toNumber(trip.cargoWeightKg),
+    plannedDistanceKm: toNumber(
+      trip.plannedDistanceKm
+    ),
+    actualDistanceKm: toNumber(
+      trip.actualDistanceKm
+    ),
+    startOdometerKm: toNumber(
+      trip.startOdometerKm
+    ),
+    finalOdometerKm: toNumber(
+      trip.finalOdometerKm
+    ),
+    revenue: toNumber(trip.revenue),
+  };
+}
+
 export async function getDashboard(
   req,
   res,
@@ -81,9 +119,17 @@ export async function getDashboard(
           };
 
     const driverWhere = {
-      status: {
-        in: ["AVAILABLE", "ON_TRIP"],
-      },
+      OR: [
+        {
+          status: "ON_TRIP",
+        },
+        {
+          status: "AVAILABLE",
+          licenseExpiry: {
+            gte: startOfTodayUtc(),
+          },
+        },
+      ],
     };
 
     if (region) {
@@ -261,7 +307,9 @@ export async function getDashboard(
         tripStatusBreakdown,
       },
 
-      recentTrips,
+      recentTrips: recentTrips.map(
+        serializeRecentTrip
+      ),
 
       filterOptions,
     });

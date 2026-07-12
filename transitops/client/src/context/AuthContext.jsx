@@ -108,6 +108,7 @@ export function AuthProvider({ children }) {
         );
 
       if (!currentToken) {
+        clearAuthentication();
         setLoading(false);
         return;
       }
@@ -160,7 +161,9 @@ export function AuthProvider({ children }) {
       user,
       token,
       loading,
-      isAuthenticated: Boolean(user),
+      isAuthenticated: Boolean(
+        user && token
+      ),
       login,
       logout,
     }),

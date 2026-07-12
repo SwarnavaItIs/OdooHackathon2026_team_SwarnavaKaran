@@ -28,6 +28,12 @@ import {
 const router = Router();
 
 router.use(authenticate);
+router.use(
+    authorize(
+        "FLEET_MANAGER",
+        "DRIVER"
+    )
+);
 
 /*
  * Static routes must come before "/:id".
@@ -39,7 +45,7 @@ router.get(
 );
 
 /*
- * All authenticated roles can view trip information.
+ * Fleet Managers and operational Drivers can view trip information.
  */
 router.get(
     "/",

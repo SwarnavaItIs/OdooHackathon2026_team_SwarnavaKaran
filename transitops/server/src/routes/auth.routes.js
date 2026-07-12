@@ -7,7 +7,6 @@ import {
 
 import {
   authenticate,
-  authorize,
 } from "../middleware/auth.middleware.js";
 
 import { validate } from "../middleware/validate.middleware.js";
@@ -31,36 +30,6 @@ router.get(
   "/me",
   authenticate,
   getCurrentUser
-);
-
-/*
- * Temporary RBAC test routes.
- * Remove these after actual modules use RBAC.
- */
-router.get(
-  "/test/fleet-manager",
-  authenticate,
-  authorize("FLEET_MANAGER"),
-  (req, res) => {
-    res.json({
-      success: true,
-      message: "Fleet Manager access granted",
-      user: req.user,
-    });
-  }
-);
-
-router.get(
-  "/test/finance",
-  authenticate,
-  authorize("FINANCIAL_ANALYST"),
-  (req, res) => {
-    res.json({
-      success: true,
-      message: "Financial Analyst access granted",
-      user: req.user,
-    });
-  }
 );
 
 export default router;

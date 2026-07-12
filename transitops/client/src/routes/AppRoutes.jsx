@@ -11,12 +11,18 @@ import AppLayout from "../layouts/AppLayout";
 
 import DashboardPage from "../pages/DashboardPage";
 import LoginPage from "../pages/LoginPage";
-import ModulePlaceholder from "../pages/ModulePlaceholder";
 import NotFoundPage from "../pages/NotFoundPage";
 import UnauthorizedPage from "../pages/UnauthorizedPage";
 
 import VehiclesPage from "../pages/VehiclesPage";
 import DriversPage from "../pages/DriversPage";
+
+import TripsPage from "../pages/TripsPage";
+import MaintenancePage from "../pages/MaintenancePage";
+
+import CostsPage from "../pages/CostsPage";
+
+import ReportsPage from "../pages/ReportsPage";
 
 const ALL_ROLES = [
   "FLEET_MANAGER",
@@ -50,44 +56,30 @@ export default function AppRoutes() {
             element={<DashboardPage />}
           />
 
-          {/* <Route
+          <Route
             path="/vehicles"
             element={
               <RoleRoute
                 allowedRoles={ALL_ROLES}
               >
-                <ModulePlaceholder
-                  title="Vehicle Registry"
-                  description="Manage fleet assets, status, capacity and vehicle lifecycle."
-                />
+                <VehiclesPage />
               </RoleRoute>
             }
-          /> */}
-
-          <Route
-            path="/vehicles"
-            element={
-                <RoleRoute
-                allowedRoles={ALL_ROLES}
-                >
-                <VehiclesPage />
-                </RoleRoute>
-            }
-            />
+          />
 
           <Route
             path="/drivers"
             element={
-                <RoleRoute
+              <RoleRoute
                 allowedRoles={[
-                    "FLEET_MANAGER",
-                    "SAFETY_OFFICER",
+                  "FLEET_MANAGER",
+                  "SAFETY_OFFICER",
                 ]}
-                >
+              >
                 <DriversPage />
-                </RoleRoute>
+              </RoleRoute>
             }
-            />
+          />
 
           <Route
             path="/trips"
@@ -98,10 +90,7 @@ export default function AppRoutes() {
                   "DRIVER",
                 ]}
               >
-                <ModulePlaceholder
-                  title="Trip Management"
-                  description="Create, dispatch, complete and cancel transport assignments."
-                />
+                <TripsPage />
               </RoleRoute>
             }
           />
@@ -114,10 +103,7 @@ export default function AppRoutes() {
                   "FLEET_MANAGER",
                 ]}
               >
-                <ModulePlaceholder
-                  title="Maintenance"
-                  description="Track active maintenance and manage vehicle shop status."
-                />
+                <MaintenancePage />
               </RoleRoute>
             }
           />
@@ -132,10 +118,7 @@ export default function AppRoutes() {
                   "FINANCIAL_ANALYST",
                 ]}
               >
-                <ModulePlaceholder
-                  title="Fuel & Expenses"
-                  description="Record fuel consumption and operational expenses."
-                />
+                <CostsPage />
               </RoleRoute>
             }
           />
@@ -149,10 +132,7 @@ export default function AppRoutes() {
                   "FINANCIAL_ANALYST",
                 ]}
               >
-                <ModulePlaceholder
-                  title="Reports"
-                  description="Review efficiency, cost, utilization and vehicle ROI."
-                />
+                <ReportsPage />
               </RoleRoute>
             }
           />

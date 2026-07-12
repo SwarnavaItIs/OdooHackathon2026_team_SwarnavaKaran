@@ -6,14 +6,21 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
+    "check": "node scripts/check-syntax.js && prisma validate",
+    "prisma:generate": "prisma generate",
+    "db:generate": "npm run prisma:generate",
     "db:migrate": "prisma migrate dev",
-    "db:generate": "prisma generate",
+    "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "smoke:test": "node scripts/smoke-test.js"
   },
-"keywords": [],
+  "keywords": [],
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "dependencies": {
     "@prisma/client": "^6.19.3",
     "bcryptjs": "^3.0.3",
