@@ -8,6 +8,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 
+import ThemeToggle from "../components/ThemeToggle";
 import { useAuth } from "../context/AuthContext";
 import { getRoleHome } from "../utils/role";
 
@@ -123,7 +124,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="grid min-h-screen bg-slate-50 lg:grid-cols-2">
+    <div className="grid min-h-screen bg-slate-50 dark:bg-slate-950 lg:grid-cols-2">
       <section className="hidden bg-slate-950 p-12 text-white lg:flex lg:flex-col lg:justify-between">
         <div>
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-lg font-bold">
@@ -161,30 +162,33 @@ export default function LoginPage() {
         </div>
       </section>
 
-      <section className="flex items-center justify-center p-5 sm:p-8">
+      <section className="relative flex items-center justify-center p-5 sm:p-8">
+        <div className="absolute right-5 top-5 sm:right-8 sm:top-8">
+          <ThemeToggle />
+        </div>
         <div className="w-full max-w-md">
           <div className="mb-8 lg:hidden">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 font-bold text-white">
               TO
             </div>
 
-            <h1 className="mt-4 text-2xl font-bold text-slate-900">
+            <h1 className="mt-4 text-2xl font-bold text-slate-900 dark:text-slate-100">
               TransitOps
             </h1>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-2xl font-bold text-slate-900">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
               Welcome back
             </h2>
 
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               Sign in to manage transport
               operations.
             </p>
 
             {error && (
-              <div className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <div className="mt-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
                 {error}
               </div>
             )}
@@ -196,7 +200,7 @@ export default function LoginPage() {
               <div>
                 <label
                   htmlFor="email"
-                  className="mb-2 block text-sm font-semibold text-slate-700"
+                  className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300"
                 >
                   Email address
                 </label>
@@ -209,14 +213,14 @@ export default function LoginPage() {
                   onChange={handleChange}
                   required
                   autoComplete="email"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-blue-500/20"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="password"
-                  className="mb-2 block text-sm font-semibold text-slate-700"
+                  className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300"
                 >
                   Password
                 </label>
@@ -229,7 +233,7 @@ export default function LoginPage() {
                   onChange={handleChange}
                   required
                   autoComplete="current-password"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-blue-500/20"
                 />
               </div>
 
@@ -244,8 +248,8 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <div className="mt-7 border-t border-slate-200 pt-6">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <div className="mt-7 border-t border-slate-200 pt-6 dark:border-slate-800">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Demo accounts
               </p>
 
@@ -260,7 +264,7 @@ export default function LoginPage() {
                           account.email
                         )
                       }
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-left text-xs font-semibold text-slate-600 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                      className="rounded-lg border border-slate-200 px-3 py-2 text-left text-xs font-semibold text-slate-600 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700 dark:text-slate-300 dark:hover:border-blue-500 dark:hover:bg-blue-950/40 dark:hover:text-blue-300"
                     >
                       {account.label}
                     </button>
@@ -268,7 +272,7 @@ export default function LoginPage() {
                 )}
               </div>
 
-              <p className="mt-3 text-xs text-slate-400">
+              <p className="mt-3 text-xs text-slate-400 dark:text-slate-500">
                 Password for all accounts:
                 Demo@123
               </p>

@@ -10,6 +10,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 
+import ThemeToggle from "../components/ThemeToggle";
 import { useAuth } from "../context/AuthContext";
 import { formatRole } from "../utils/role";
 
@@ -199,7 +200,7 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 bg-slate-950 lg:block">
         <SidebarContent
@@ -240,7 +241,7 @@ export default function AppLayout() {
       </aside>
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
+        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90">
           <div className="flex h-16 items-center justify-between px-4 sm:px-6">
             <div className="flex items-center gap-3">
               <button
@@ -248,7 +249,7 @@ export default function AppLayout() {
                 onClick={() =>
                   setSidebarOpen(true)
                 }
-                className="rounded-lg border border-slate-200 p-2 text-slate-700 hover:bg-slate-100 lg:hidden"
+                className="rounded-lg border border-slate-200 p-2 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 lg:hidden"
                 aria-label="Open navigation"
               >
                 <span className="block h-0.5 w-5 bg-current" />
@@ -257,11 +258,11 @@ export default function AppLayout() {
               </button>
 
               <div>
-                <p className="text-sm font-semibold text-slate-900">
+                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                   Smart Transport Operations
                 </p>
 
-                <p className="hidden text-xs text-slate-500 sm:block">
+                <p className="hidden text-xs text-slate-500 dark:text-slate-400 sm:block">
                   Monitor your fleet in real time
                 </p>
               </div>
@@ -269,18 +270,20 @@ export default function AppLayout() {
 
             <div className="flex items-center gap-3">
               <div className="hidden text-right sm:block">
-                <p className="text-sm font-semibold text-slate-900">
+                <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                   {user.name}
                 </p>
 
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {formatRole(
                     user.role.code
                   )}
                 </p>
               </div>
 
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700">
+              <ThemeToggle />
+
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700 dark:bg-blue-950 dark:text-blue-300">
                 {user.name
                   .split(" ")
                   .map((word) => word[0])
@@ -292,7 +295,7 @@ export default function AppLayout() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+                className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
               >
                 Logout
               </button>

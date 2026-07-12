@@ -9,6 +9,23 @@
     />
     <meta name="theme-color" content="#020617" />
     <title>TransitOps</title>
+    <script>
+      (function () {
+        try {
+          var savedTheme = window.localStorage.getItem("transitops_theme");
+          var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+          var theme = savedTheme || (prefersDark ? "dark" : "light");
+
+          if (theme === "dark") {
+            document.documentElement.classList.add("dark");
+          }
+
+          document.documentElement.dataset.theme = theme;
+        } catch (error) {
+          document.documentElement.dataset.theme = "light";
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
