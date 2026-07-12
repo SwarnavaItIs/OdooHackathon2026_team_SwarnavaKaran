@@ -7,6 +7,11 @@ import {
 
 import api from "../api/api";
 
+import {
+    downloadBlobResponse,
+    getBlobErrorMessage,
+} from "../utils/downloadBlob";
+
 import KpiCard from "../components/KpiCard";
 import PageHeader from "../components/PageHeader";
 import ReportBarList from "../components/ReportBarList";
@@ -47,35 +52,6 @@ function formatNumber(value) {
     return new Intl.NumberFormat("en-IN", {
         maximumFractionDigits: 2,
     }).format(Number(value || 0));
-}
-
-function getFileName(contentDisposition) {
-    if (!contentDisposition) {
-        return `transitops-vehicle-report-${new Date().toISOString().slice(0, 10)
-            }.csv`;
-    }
-
-    const utfMatch =
-        contentDisposition.match(
-            /filename\*=UTF-8''([^;]+)/
-        );
-
-    if (utfMatch?.[1]) {
-        return decodeURIComponent(
-            utfMatch[1]
-        );
-    }
-
-    const regularMatch =
-        contentDisposition.match(
-            /filename="?([^"]+)"?/
-        );
-
-    return (
-        regularMatch?.[1] ||
-        `transitops-vehicle-report-${new Date().toISOString().slice(0, 10)
-        }.csv`
-    );
 }
 
 function ReportTableSkeleton() {
@@ -126,6 +102,10 @@ export default function ReportsPage() {
     const [
         downloadingCsv,
         setDownloadingCsv,
+    ] = useState(false);
+    const [
+        downloadingPdf,
+        setDownloadingPdf,
     ] = useState(false);
 
     const [error, setError] =
@@ -292,78 +272,62 @@ export default function ReportsPage() {
                 }
             );
 
-            const contentType =
-                response.headers["content-type"] ||
-                "text/csv;charset=utf-8";
-
-            const blob = new Blob(
-                [response.data],
-                {
-                    type: contentType,
-                }
-            );
-
-            const objectUrl =
-                window.URL.createObjectURL(blob);
-
-            const anchor =
-                document.createElement("a");
-
-            anchor.href = objectUrl;
-
-            anchor.download = getFileName(
-                response.headers[
-                "content-disposition"
-                ]
-            );
-
-            document.body.appendChild(anchor);
-            anchor.click();
-            anchor.remove();
-
-            window.URL.revokeObjectURL(
-                objectUrl
-            );
+            downloadBlobResponse({
+                response,
+                fallbackType:
+                    "text/csv;charset=utf-8",
+                extension: "csv",
+            });
 
             setNotice(
                 "Vehicle report downloaded successfully"
             );
         } catch (requestError) {
-            let message =
-                "Unable to download CSV report.";
-
-            /*
-             * Axios returns a Blob even when the
-             * server error body contains JSON.
-             */
-            if (
-                requestError.response?.data instanceof
-                Blob
-            ) {
-                try {
-                    const errorText =
-                        await requestError.response.data.text();
-
-                    const errorData =
-                        JSON.parse(errorText);
-
-                    message =
-                        errorData.message || message;
-                } catch {
-                    // Preserve default message.
-                }
-            } else {
-                message =
-                    requestError.response?.data
-                        ?.message || message;
-            }
-
-            setError(message);
+            setError(
+                await getBlobErrorMessage(
+                    requestError,
+                    "Unable to download CSV report."
+                )
+            );
         } finally {
             setDownloadingCsv(false);
         }
     }
 
+    async function downloadPdf() {
+        try {
+            setDownloadingPdf(true);
+            setError("");
+            setNotice("");
+
+            const response = await api.get(
+                "/reports/vehicles/pdf",
+                {
+                    params: buildQuery(filters),
+                    responseType: "blob",
+                }
+            );
+
+            downloadBlobResponse({
+                response,
+                fallbackType: "application/pdf",
+                extension: "pdf",
+            });
+
+            setNotice(
+                "Vehicle PDF report downloaded successfully"
+            );
+        } catch (requestError) {
+            setError(
+                await getBlobErrorMessage(
+                    requestError,
+                    "Unable to download PDF report."
+                )
+            );
+        } finally {
+            setDownloadingPdf(false);
+        }
+    }
     return (
         <div>
             <PageHeader
@@ -397,6 +361,20 @@ export default function ReportsPage() {
                             {downloadingCsv
                                 ? "Downloading..."
                                 : "Download CSV"}
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={downloadPdf}
+                            disabled={
+                                downloadingPdf ||
+                                rows.length === 0
+                            }
+                            className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                        >
+                            {downloadingPdf
+                                ? "Generating PDF..."
+                                : "Download PDF"}
                         </button>
                     </div>
                 }

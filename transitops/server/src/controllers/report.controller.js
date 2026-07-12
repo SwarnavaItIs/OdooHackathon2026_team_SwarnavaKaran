@@ -2,6 +2,10 @@ import {
   buildVehicleReport,
 } from "../services/report.service.js";
 
+import {
+  createVehicleReportPdfStream,
+} from "../services/vehicle-report-pdf.service.js";
+
 function escapeCsvValue(value) {
   if (
     value === null ||
@@ -209,6 +213,72 @@ export async function exportVehicleReportCsv(
      * display text correctly.
      */
     res.status(200).send(`\uFEFF${csv}`);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function exportVehicleReportPdf(
+  req,
+  res,
+  next
+) {
+  try {
+    const result = await buildVehicleReport(
+      req.validated.query
+    );
+
+    const date = new Date()
+      .toISOString()
+      .slice(0, 10);
+
+    const report = {
+      ...result,
+      formulas: {
+        fuelEfficiency:
+          "Completed Distance / Fuel Consumed",
+
+        operationalCost:
+          "Fuel Cost + Maintenance Cost",
+
+        vehicleRoi:
+          "(Revenue - Operational Cost) / Acquisition Cost",
+      },
+    };
+
+    const doc = createVehicleReportPdfStream({
+      report,
+      filters: req.validated.query,
+      user: req.user,
+      generatedAt: new Date(),
+    });
+
+    doc.on("error", (error) => {
+      if (!res.headersSent) {
+        next(error);
+        return;
+      }
+
+      res.destroy(error);
+    });
+
+    res.setHeader(
+      "Content-Type",
+      "application/pdf"
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="transitops-vehicle-report-${date}.pdf"`
+    );
+
+    res.setHeader(
+      "Cache-Control",
+      "no-store"
+    );
+
+    doc.pipe(res);
+    doc.end();
   } catch (error) {
     next(error);
   }

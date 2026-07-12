@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import {
   exportVehicleReportCsv,
+  exportVehicleReportPdf,
   getVehicleReport,
 } from "../controllers/report.controller.js";
 
@@ -40,6 +41,16 @@ router.get(
   ),
   validate(vehicleReportSchema),
   exportVehicleReportCsv
+);
+
+router.get(
+  "/vehicles/pdf",
+  authorize(
+    "FLEET_MANAGER",
+    "FINANCIAL_ANALYST"
+  ),
+  validate(vehicleReportSchema),
+  exportVehicleReportPdf
 );
 
 export default router;

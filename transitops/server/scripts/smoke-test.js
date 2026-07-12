@@ -250,6 +250,39 @@ async function main() {
         (data) =>
             Array.isArray(data.vehicles)
     );
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/reports/vehicles/pdf`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+
+        const contentType =
+            response.headers.get("content-type") || "";
+
+        const signature = Buffer.from(
+            await response.arrayBuffer()
+        )
+            .subarray(0, 4)
+            .toString("utf8");
+
+        printResult(
+            response.ok &&
+                contentType.includes("application/pdf") &&
+                signature === "%PDF",
+            "Vehicle report PDF",
+            `HTTP ${response.status}`
+        );
+    } catch (error) {
+        printResult(
+            false,
+            "Vehicle report PDF",
+            error.message
+        );
+    }
 
     console.log("");
     console.log(

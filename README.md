@@ -187,6 +187,7 @@ Supports:
 - Filters
 - Sorting
 - CSV Export
+- Authenticated PDF Export
 
 ---
 
@@ -261,6 +262,37 @@ PostgreSQL Database
 
 ---
 
+---
+
+# API: Vehicle Report PDF Export
+
+`GET /api/reports/vehicles/pdf`
+
+Authentication is required. Only `FLEET_MANAGER` and `FINANCIAL_ANALYST` may download this financial report; `DRIVER` and `SAFETY_OFFICER` are denied by RBAC.
+
+Supported query parameters match the existing vehicle report endpoint:
+
+- `search`
+- `type`
+- `region`
+- `status`
+- `sortBy`
+- `sortOrder`
+
+Example filename:
+
+```text
+transitops-vehicle-report-2026-07-12.pdf
+```
+
+The PDF includes a generated-by header, applied filters, executive summary, top-5 fuel efficiency and operational-cost bar visuals, paginated detailed vehicle table, formulas, disclaimer, and page footers.
+
+---
+
+# Bonus Features
+
+- CSV export for vehicle performance analytics
+- Server-side authenticated PDF export for Vehicle Performance Reports
 # Team
 
 | Name | Role |

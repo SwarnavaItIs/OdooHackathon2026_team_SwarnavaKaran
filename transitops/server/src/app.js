@@ -68,6 +68,10 @@ app.use(
             "Content-Type",
             "Authorization",
         ],
+
+        exposedHeaders: [
+            "Content-Disposition",
+        ],
     })
 );
 
