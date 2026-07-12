@@ -22,13 +22,18 @@ export function errorHandler(error, req, res, next) {
             ? target.join(", ")
             : String(target || "unique field");
 
+        const modelName = String(
+            error.meta?.modelName || ""
+        );
+
         if (
             fieldText.includes("registration_number") ||
             fieldText.includes("registrationNumber")
         ) {
             return res.status(409).json({
                 success: false,
-                message: "Vehicle registration number already exists",
+                message:
+                    "Vehicle registration number already exists",
             });
         }
 
@@ -38,14 +43,32 @@ export function errorHandler(error, req, res, next) {
         ) {
             return res.status(409).json({
                 success: false,
-                message: "Driver licence number already exists",
+                message:
+                    "Driver licence number already exists",
             });
         }
 
         if (
-            fieldText.includes("vehicle_id") ||
-            fieldText.includes("driver_id") ||
-            fieldText.includes("dispatched")
+            modelName.includes("Maintenance") ||
+            fieldText.includes(
+                "one_active_maintenance_per_vehicle"
+            )
+        ) {
+            return res.status(409).json({
+                success: false,
+                message:
+                    "Vehicle already has an active maintenance record",
+            });
+        }
+
+        if (
+            modelName.includes("Trip") ||
+            fieldText.includes(
+                "one_dispatched_trip_per_vehicle"
+            ) ||
+            fieldText.includes(
+                "one_dispatched_trip_per_driver"
+            )
         ) {
             return res.status(409).json({
                 success: false,
@@ -56,7 +79,8 @@ export function errorHandler(error, req, res, next) {
 
         return res.status(409).json({
             success: false,
-            message: `A record with the same ${fieldText} already exists`,
+            message:
+                "A record with the same unique value already exists",
         });
     }
 
