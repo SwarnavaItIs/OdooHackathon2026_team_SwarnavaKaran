@@ -15,6 +15,9 @@ import ModulePlaceholder from "../pages/ModulePlaceholder";
 import NotFoundPage from "../pages/NotFoundPage";
 import UnauthorizedPage from "../pages/UnauthorizedPage";
 
+import VehiclesPage from "../pages/VehiclesPage";
+import DriversPage from "../pages/DriversPage";
+
 const ALL_ROLES = [
   "FLEET_MANAGER",
   "DRIVER",
@@ -47,7 +50,7 @@ export default function AppRoutes() {
             element={<DashboardPage />}
           />
 
-          <Route
+          {/* <Route
             path="/vehicles"
             element={
               <RoleRoute
@@ -59,24 +62,32 @@ export default function AppRoutes() {
                 />
               </RoleRoute>
             }
-          />
+          /> */}
+
+          <Route
+            path="/vehicles"
+            element={
+                <RoleRoute
+                allowedRoles={ALL_ROLES}
+                >
+                <VehiclesPage />
+                </RoleRoute>
+            }
+            />
 
           <Route
             path="/drivers"
             element={
-              <RoleRoute
+                <RoleRoute
                 allowedRoles={[
-                  "FLEET_MANAGER",
-                  "SAFETY_OFFICER",
+                    "FLEET_MANAGER",
+                    "SAFETY_OFFICER",
                 ]}
-              >
-                <ModulePlaceholder
-                  title="Driver Management"
-                  description="Manage licence compliance, safety scores and driver availability."
-                />
-              </RoleRoute>
+                >
+                <DriversPage />
+                </RoleRoute>
             }
-          />
+            />
 
           <Route
             path="/trips"
