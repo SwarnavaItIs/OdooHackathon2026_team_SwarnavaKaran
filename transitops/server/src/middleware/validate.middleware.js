@@ -1,40 +1,37 @@
 export function validate(schema) {
-  return (req, res, next) => {
-    const result = schema.safeParse({
-      body: req.body,
-      params: req.params,
-      query: req.query,
-    });
+    return (req, res, next) => {
+        const result = schema.safeParse({
+            body: req.body,
+            params: req.params,
+            query: req.query,
+        });
 
-    if (!result.success) {
-      const errors = result.error.issues.map((issue) => ({
-        field: issue.path.join("."),
-        message: issue.message,
-      }));
+        if (!result.success) {
+            const errors = result.error.issues.map((issue) => ({
+                field: issue.path.join("."),
+                message: issue.message,
+            }));
 
-      return res.status(400).json({
-        success: false,
-        message: "Validation failed",
-        errors,
-      });
-    }
+            return res.status(400).json({
+                success: false,
+                message: "Validation failed",
+                errors,
+            });
+        }
 
-    /*
-     * Replace the original request values with normalized
-     * and validated values returned by Zod.
-     */
-    if (result.data.body !== undefined) {
-      req.body = result.data.body;
-    }
+        /*
+         * Body is writable, so normalized body values can replace it.
+         */
+        if (result.data.body !== undefined) {
+            req.body = result.data.body;
+        }
 
-    if (result.data.params !== undefined) {
-      req.params = result.data.params;
-    }
+        /*
+         * Keep normalized params/query values separately.
+         * This avoids assigning directly to req.query.
+         */
+        req.validated = result.data;
 
-    if (result.data.query !== undefined) {
-      req.query = result.data.query;
-    }
-
-    next();
-  };
+        next();
+    };
 }
