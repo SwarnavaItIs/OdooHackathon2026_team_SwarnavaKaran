@@ -17,6 +17,23 @@ const allowedOrigins = (
     .split(",")
     .map((origin) => origin.trim())
     .filter(Boolean);
+const devOriginPattern =
+    /^https?:\/\/(localhost|127\.0\.0\.1):\d+$/;
+
+function isAllowedOrigin(origin) {
+    if (!origin) {
+        return true;
+    }
+
+    if (allowedOrigins.includes(origin)) {
+        return true;
+    }
+
+    return (
+        process.env.NODE_ENV !== "production" &&
+        devOriginPattern.test(origin)
+    );
+}
 
 app.disable("x-powered-by");
 
@@ -27,10 +44,7 @@ app.use(
              * Requests without an Origin include
              * server-to-server calls and API clients.
              */
-            if (
-                !origin ||
-                allowedOrigins.includes(origin)
-            ) {
+            if (isAllowedOrigin(origin)) {
                 return callback(null, true);
             }
 
