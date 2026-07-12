@@ -6,62 +6,49 @@ import {
 import api from "../api/api";
 
 const emptyForm = {
+  registrationNumber: "",
   name: "",
-  licenseNumber: "",
-  licenseCategory: "",
-  licenseExpiry: "",
-  contactNumber: "",
-  safetyScore: "100",
+  model: "",
+  type: "",
   region: "",
-  status: "",
+  maxLoadKg: "",
+  odometerKm: "0",
+  acquisitionCost: "0",
 };
 
-function formatDateForInput(value) {
-  if (!value) {
-    return "";
-  }
-
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-
-  return date.toISOString().slice(0, 10);
-}
-
-function getInitialForm(driver) {
-  if (!driver) {
+function getInitialForm(vehicle) {
+  if (!vehicle) {
     return emptyForm;
   }
 
   return {
-    name: driver.name || "",
-    licenseNumber:
-      driver.licenseNumber || "",
-    licenseCategory:
-      driver.licenseCategory || "",
-    licenseExpiry:
-      formatDateForInput(
-        driver.licenseExpiry
-      ),
-    contactNumber:
-      driver.contactNumber || "",
-    safetyScore:
-      driver.safetyScore?.toString() ||
-      "100",
-    region: driver.region || "",
-    status: "",
+    registrationNumber:
+      vehicle.registrationNumber || "",
+
+    name: vehicle.name || "",
+    model: vehicle.model || "",
+    type: vehicle.type || "",
+    region: vehicle.region || "",
+
+    maxLoadKg:
+      vehicle.maxLoadKg?.toString() || "",
+
+    odometerKm:
+      vehicle.odometerKm?.toString() || "0",
+
+    acquisitionCost:
+      vehicle.acquisitionCost?.toString() ||
+      "0",
   };
 }
 
-export default function DriverFormModal({
+export default function VehicleFormModal({
   open,
-  driver,
+  vehicle,
   onClose,
   onSaved,
 }) {
-  const isEditing = Boolean(driver);
+  const isEditing = Boolean(vehicle);
 
   const [form, setForm] =
     useState(emptyForm);
@@ -74,10 +61,10 @@ export default function DriverFormModal({
 
   useEffect(() => {
     if (open) {
-      setForm(getInitialForm(driver));
+      setForm(getInitialForm(vehicle));
       setError("");
     }
-  }, [open, driver]);
+  }, [open, vehicle]);
 
   if (!open) {
     return null;
@@ -104,50 +91,44 @@ export default function DriverFormModal({
     setError("");
 
     const payload = {
-      name: form.name,
-      licenseNumber:
-        form.licenseNumber,
-      licenseCategory:
-        form.licenseCategory,
-      licenseExpiry:
-        form.licenseExpiry,
-      contactNumber:
-        form.contactNumber,
-      safetyScore: Number(
-        form.safetyScore
-      ),
-      region: form.region,
-    };
+      registrationNumber:
+        form.registrationNumber,
 
-    /*
-     * Status is only accepted during creation.
-     * Later status changes use the dedicated
-     * /drivers/:id/status endpoint.
-     */
-    if (
-      !isEditing &&
-      form.status
-    ) {
-      payload.status = form.status;
-    }
+      name: form.name,
+      model: form.model || null,
+      type: form.type,
+      region: form.region,
+
+      maxLoadKg: Number(
+        form.maxLoadKg
+      ),
+
+      odometerKm: Number(
+        form.odometerKm
+      ),
+
+      acquisitionCost: Number(
+        form.acquisitionCost
+      ),
+    };
 
     try {
       let response;
 
       if (isEditing) {
         response = await api.patch(
-          `/drivers/${driver.id}`,
+          `/vehicles/${vehicle.id}`,
           payload
         );
       } else {
         response = await api.post(
-          "/drivers",
+          "/vehicles",
           payload
         );
       }
 
       onSaved(
-        response.data.driver,
+        response.data.vehicle,
         response.data.message
       );
     } catch (requestError) {
@@ -165,7 +146,7 @@ export default function DriverFormModal({
       } else {
         setError(
           responseData?.message ||
-            "Unable to save driver."
+            "Unable to save vehicle."
         );
       }
     } finally {
@@ -178,24 +159,24 @@ export default function DriverFormModal({
       <div
         role="dialog"
         aria-modal="true"
-        aria-labelledby="driver-form-title"
+        aria-labelledby="vehicle-form-title"
         className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl"
       >
         <div className="flex items-start justify-between border-b border-slate-200 px-6 py-5">
           <div>
             <h2
-              id="driver-form-title"
+              id="vehicle-form-title"
               className="text-xl font-bold text-slate-900"
             >
               {isEditing
-                ? "Edit Driver"
-                : "Register Driver"}
+                ? "Edit Vehicle"
+                : "Register Vehicle"}
             </h2>
 
             <p className="mt-1 text-sm text-slate-500">
               {isEditing
-                ? "Update licence, safety and contact information."
-                : "Add a driver to the transport operations registry."}
+                ? "Update vehicle registry information."
+                : "Add a new asset to the fleet registry."}
             </p>
           </div>
 
@@ -223,146 +204,95 @@ export default function DriverFormModal({
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
               <label
-                htmlFor="driver-name"
+                htmlFor="registrationNumber"
                 className="mb-2 block text-sm font-semibold text-slate-700"
               >
-                Driver Name
+                Registration Number
               </label>
 
               <input
-                id="driver-name"
+                id="registrationNumber"
+                name="registrationNumber"
+                value={
+                  form.registrationNumber
+                }
+                onChange={handleChange}
+                required
+                maxLength={30}
+                placeholder="WB-01-VAN-05"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm uppercase outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="name"
+                className="mb-2 block text-sm font-semibold text-slate-700"
+              >
+                Vehicle Name
+              </label>
+
+              <input
+                id="name"
                 name="name"
                 value={form.name}
                 onChange={handleChange}
                 required
                 maxLength={100}
-                placeholder="Alex Roy"
+                placeholder="Van-05"
                 className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
               />
             </div>
 
             <div>
               <label
-                htmlFor="license-number"
+                htmlFor="model"
                 className="mb-2 block text-sm font-semibold text-slate-700"
               >
-                Licence Number
+                Model
               </label>
 
               <input
-                id="license-number"
-                name="licenseNumber"
-                value={
-                  form.licenseNumber
-                }
+                id="model"
+                name="model"
+                value={form.model}
+                onChange={handleChange}
+                maxLength={100}
+                placeholder="Tata Ace"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="type"
+                className="mb-2 block text-sm font-semibold text-slate-700"
+              >
+                Vehicle Type
+              </label>
+
+              <input
+                id="type"
+                name="type"
+                value={form.type}
                 onChange={handleChange}
                 required
                 maxLength={50}
-                placeholder="WB-DL-1001"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm uppercase outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="license-category"
-                className="mb-2 block text-sm font-semibold text-slate-700"
-              >
-                Licence Category
-              </label>
-
-              <input
-                id="license-category"
-                name="licenseCategory"
-                value={
-                  form.licenseCategory
-                }
-                onChange={handleChange}
-                required
-                maxLength={30}
-                placeholder="LMV"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm uppercase outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="license-expiry"
-                className="mb-2 block text-sm font-semibold text-slate-700"
-              >
-                Licence Expiry
-              </label>
-
-              <input
-                id="license-expiry"
-                name="licenseExpiry"
-                type="date"
-                value={
-                  form.licenseExpiry
-                }
-                onChange={handleChange}
-                required
+                placeholder="Van"
                 className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
               />
             </div>
 
             <div>
               <label
-                htmlFor="contact-number"
-                className="mb-2 block text-sm font-semibold text-slate-700"
-              >
-                Contact Number
-              </label>
-
-              <input
-                id="contact-number"
-                name="contactNumber"
-                value={
-                  form.contactNumber
-                }
-                onChange={handleChange}
-                required
-                minLength={7}
-                maxLength={20}
-                placeholder="9876543210"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="safety-score"
-                className="mb-2 block text-sm font-semibold text-slate-700"
-              >
-                Safety Score
-              </label>
-
-              <input
-                id="safety-score"
-                name="safetyScore"
-                type="number"
-                min="0"
-                max="100"
-                step="0.01"
-                value={
-                  form.safetyScore
-                }
-                onChange={handleChange}
-                required
-                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="driver-region"
+                htmlFor="region"
                 className="mb-2 block text-sm font-semibold text-slate-700"
               >
                 Region
               </label>
 
               <input
-                id="driver-region"
+                id="region"
                 name="region"
                 value={form.region}
                 onChange={handleChange}
@@ -373,54 +303,79 @@ export default function DriverFormModal({
               />
             </div>
 
-            {!isEditing && (
-              <div>
-                <label
-                  htmlFor="initial-status"
-                  className="mb-2 block text-sm font-semibold text-slate-700"
-                >
-                  Initial Status
-                </label>
+            <div>
+              <label
+                htmlFor="maxLoadKg"
+                className="mb-2 block text-sm font-semibold text-slate-700"
+              >
+                Maximum Load (kg)
+              </label>
 
-                <select
-                  id="initial-status"
-                  name="status"
-                  value={form.status}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                >
-                  <option value="">
-                    Automatic
-                  </option>
+              <input
+                id="maxLoadKg"
+                name="maxLoadKg"
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={form.maxLoadKg}
+                onChange={handleChange}
+                required
+                placeholder="500"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              />
+            </div>
 
-                  <option value="AVAILABLE">
-                    Available
-                  </option>
+            <div>
+              <label
+                htmlFor="odometerKm"
+                className="mb-2 block text-sm font-semibold text-slate-700"
+              >
+                Odometer (km)
+              </label>
 
-                  <option value="OFF_DUTY">
-                    Off Duty
-                  </option>
+              <input
+                id="odometerKm"
+                name="odometerKm"
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.odometerKm}
+                onChange={handleChange}
+                required
+                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              />
+            </div>
 
-                  <option value="SUSPENDED">
-                    Suspended
-                  </option>
-                </select>
+            <div>
+              <label
+                htmlFor="acquisitionCost"
+                className="mb-2 block text-sm font-semibold text-slate-700"
+              >
+                Acquisition Cost
+              </label>
 
-                <p className="mt-1 text-xs text-slate-500">
-                  Automatic uses Available for a
-                  valid licence and Off Duty for
-                  an expired licence.
-                </p>
-              </div>
-            )}
+              <input
+                id="acquisitionCost"
+                name="acquisitionCost"
+                type="number"
+                min="0"
+                step="0.01"
+                value={
+                  form.acquisitionCost
+                }
+                onChange={handleChange}
+                required
+                placeholder="850000"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+              />
+            </div>
           </div>
 
           {isEditing && (
             <div className="mt-5 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
-              Driver status is managed through
-              the status actions in the driver
-              table. On Trip status is controlled
-              only by trip dispatch and completion.
+              Vehicle status cannot be edited
+              manually. It is controlled by trip,
+              maintenance and retirement workflows.
             </div>
           )}
 
@@ -443,7 +398,7 @@ export default function DriverFormModal({
                 ? "Saving..."
                 : isEditing
                   ? "Save Changes"
-                  : "Register Driver"}
+                  : "Register Vehicle"}
             </button>
           </div>
         </form>
