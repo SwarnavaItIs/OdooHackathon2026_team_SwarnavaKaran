@@ -51,7 +51,7 @@ async function seedUsers(tx, roles, passwordHash) {
     const userData = [
         {
             key: "fleet",
-            name: "Ananya Sharma",
+            name: "Swarnava Karan",
             email: "fleet@demo.com",
             roleId: roles.FLEET_MANAGER.id,
         },

@@ -125,7 +125,7 @@ export default function LoginPage() {
 
   return (
     <div className="grid min-h-screen bg-slate-50 dark:bg-slate-950 lg:grid-cols-2">
-      <section className="hidden bg-slate-950 p-12 text-white lg:flex lg:flex-col lg:justify-between">
+      <section className="hidden border-slate-200 bg-slate-950 bg-[radial-gradient(circle_at_20%_10%,rgba(37,99,235,0.16),transparent_28%),linear-gradient(135deg,#020617_0%,#060b1a_52%,#020617_100%)] p-12 text-white lg:flex lg:flex-col lg:justify-between lg:border-r dark:border-slate-700/70">
         <div>
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-lg font-bold">
             TO
@@ -162,7 +162,7 @@ export default function LoginPage() {
         </div>
       </section>
 
-      <section className="relative flex items-center justify-center p-5 sm:p-8">
+      <section className="relative flex items-center justify-center bg-slate-50 p-5 sm:p-8 dark:bg-[radial-gradient(circle_at_78%_28%,rgba(37,99,235,0.14),transparent_24%),linear-gradient(135deg,#07111f_0%,#0b1220_48%,#111827_100%)] lg:dark:shadow-[inset_1px_0_0_rgba(148,163,184,0.24)]">
         <div className="absolute right-5 top-5 sm:right-8 sm:top-8">
           <ThemeToggle />
         </div>
@@ -177,7 +177,7 @@ export default function LoginPage() {
             </h1>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/90 dark:shadow-2xl dark:shadow-slate-950/30 sm:p-8">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
               Welcome back
             </h2>
